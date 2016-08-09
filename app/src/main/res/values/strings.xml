@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">WXAutoManager</string>
+
+    <string name="auto_reply_description">自动回复信息服务</string>
+    <string name="auto_open_lucky_money_description">自动抢红包服务</string>
+    <string name="AutoOpenPacketService">AutoOpenLuckyMoneyService</string>
+    <string name="AutoReplyService">AutoReplyService</string>
+</resources>
