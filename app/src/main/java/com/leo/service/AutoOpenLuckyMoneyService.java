@@ -30,14 +30,7 @@ public class AutoOpenLuckyMoneyService extends AccessibilityService{
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-
-        Log.i(TAG, "-------------------------------------------------------------");
         int eventType = event.getEventType(); // 事件类型
-        Log.i(TAG, "PackageName:" + event.getPackageName() + ""); // 响应事件的包名
-        Log.i(TAG, "Source Class:" + event.getClassName() + ""); // 事件源的类名
-        Log.i(TAG, "Description:" + event.getContentDescription()+ ""); // 描述
-        Log.i(TAG, "Event Type(int):" + eventType + "");
-
         switch (eventType) {
             case AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED: // 通知栏事件
                 Log.i(TAG, "TYPE_NOTIFICATION_STATE_CHANGED");
@@ -76,7 +69,6 @@ public class AutoOpenLuckyMoneyService extends AccessibilityService{
                 }
                 break;
         }
-        Log.i(TAG, "-------------------------------------------------------------");
     }
 
     @Override
@@ -153,64 +145,6 @@ public class AutoOpenLuckyMoneyService extends AccessibilityService{
             handler.removeMessages(MSG_BACK_HOME);
         }
         handler.sendEmptyMessage(MSG_BACK_HOME);
-    }
-
-    private void printEventLog(AccessibilityEvent event) {
-        Log.i(TAG, "-------------------------------------------------------------");
-        int eventType = event.getEventType(); //事件类型
-        Log.i(TAG, "PackageName:" + event.getPackageName() + ""); // 响应事件的包名
-        Log.i(TAG, "Source Class:" + event.getClassName() + ""); // 事件源的类名
-        Log.i(TAG, "Description:" + event.getContentDescription()+ ""); // 事件源描述
-        Log.i(TAG, "Event Type(int):" + eventType + "");
-
-        switch (eventType) {
-            case AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED:// 通知栏事件
-                Log.i(TAG, "event type:TYPE_NOTIFICATION_STATE_CHANGED");
-                break;
-            case AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED://窗体状态改变
-                Log.i(TAG, "event type:TYPE_WINDOW_STATE_CHANGED");
-                break;
-            case AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED://View获取到焦点
-                Log.i(TAG, "event type:TYPE_VIEW_ACCESSIBILITY_FOCUSED");
-                break;
-            case AccessibilityEvent.TYPE_GESTURE_DETECTION_START:
-                Log.i(TAG, "event type:TYPE_VIEW_ACCESSIBILITY_FOCUSED");
-                break;
-            case AccessibilityEvent.TYPE_GESTURE_DETECTION_END:
-                Log.i(TAG, "event type:TYPE_GESTURE_DETECTION_END");
-                break;
-            case AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED:
-                Log.i(TAG, "event type:TYPE_WINDOW_CONTENT_CHANGED");
-                break;
-            case AccessibilityEvent.TYPE_VIEW_CLICKED:
-                Log.i(TAG, "event type:TYPE_VIEW_CLICKED");
-                break;
-            case AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED:
-                Log.i(TAG, "event type:TYPE_VIEW_TEXT_CHANGED");
-                break;
-            case AccessibilityEvent.TYPE_VIEW_SCROLLED:
-                Log.i(TAG, "event type:TYPE_VIEW_SCROLLED");
-                break;
-            case AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED:
-                Log.i(TAG, "event type:TYPE_VIEW_TEXT_SELECTION_CHANGED");
-                break;
-            default:
-                Log.i(TAG, "no listen event");
-        }
-
-        Log.i(TAG, "-------------------------------------------------------------");
-    }
-
-
-
-    private void printNodeInfo(AccessibilityNodeInfo node) {
-        Log.i(TAG, "#######################");
-        Log.i(TAG, "Class=" + node.getClassName());
-        Log.i(TAG, "Text=" + node.getText());
-        Log.i(TAG, "Description=" + node.getContentDescription());
-        Log.i(TAG, "ViewIdResourceName=" + node.getViewIdResourceName());
-        Log.i(TAG, "Child Count=" + node.getChildCount());
-        Log.i(TAG, "#######################");
     }
 
 

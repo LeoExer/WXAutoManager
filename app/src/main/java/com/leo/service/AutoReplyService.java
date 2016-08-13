@@ -1,6 +1,7 @@
 package com.leo.service;
 
 import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.ClipData;
@@ -13,6 +14,7 @@ import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import com.leo.common.Config;
 import com.leo.common.UI;
 import com.leo.util.PhoneController;
 
@@ -34,15 +36,7 @@ public class AutoReplyService extends AccessibilityService{
      */
     @Override
     public void onAccessibilityEvent(final AccessibilityEvent event) {
-//        printEventLog(event);
-
-        Log.i(TAG, "-------------------------------------------------------------");
         int eventType = event.getEventType(); // 事件类型
-        Log.i(TAG, "PackageName:" + event.getPackageName() + ""); // 响应事件的包名
-        Log.i(TAG, "Source Class:" + event.getClassName() + ""); // 事件源的类名
-        Log.i(TAG, "Description:" + event.getContentDescription()+ ""); // 描述
-        Log.i(TAG, "Event Type(int):" + eventType + "");
-
         switch (eventType) {
             case AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED: // 通知栏事件
                 Log.i(TAG, "TYPE_NOTIFICATION_STATE_CHANGED");
@@ -75,7 +69,6 @@ public class AutoReplyService extends AccessibilityService{
                 }
                 break;
         }
-        Log.i(TAG, "-------------------------------------------------------------");
     }
 
 
@@ -87,8 +80,12 @@ public class AutoReplyService extends AccessibilityService{
 
     @Override
     protected void onServiceConnected() {
-        super.onServiceConnected();
-        Log.i(TAG, "onServiceConnected");
+        AccessibilityServiceInfo info = new AccessibilityServiceInfo();
+        info.eventTypes = AccessibilityEvent.TYPES_ALL_MASK;
+        info.packageNames = new String[]{Config.WX_PACKAGE_NAME};
+        info.feedbackType = AccessibilityServiceInfo.FEEDBACK_SPOKEN;
+        info.notificationTimeout = 100;
+        this.setServiceInfo(info);
     }
 
     /**
@@ -158,8 +155,6 @@ public class AutoReplyService extends AccessibilityService{
         Log.i(TAG, "root class=" + rootNode.getClassName() + ", " + rootNode.getText() + ", child: " + count);
         for (int i = 0; i < count; i++) {
             AccessibilityNodeInfo node = rootNode.getChild(i);
-            printNodeInfo(node);
-
             if (UI.EDITTEXT.equals(node.getClassName())) {   // 找到输入框并输入文本
                 Log.i(TAG, "****found the EditText");
                 setText(node, reply);
@@ -191,67 +186,5 @@ public class AutoReplyService extends AccessibilityService{
             node.performAction(AccessibilityNodeInfo.ACTION_FOCUS); // 获取焦点
             node.performAction(AccessibilityNodeInfo.ACTION_PASTE); // 执行粘贴
         }
-    }
-
-
-    private void printEventLog(AccessibilityEvent event) {
-        Log.i(TAG, "-------------------------------------------------------------");
-        int eventType = event.getEventType(); //事件类型
-        Log.i(TAG, "PackageName:" + event.getPackageName() + ""); // 响应事件的包名
-        Log.i(TAG, "Source Class:" + event.getClassName() + ""); // 事件源的类名
-        Log.i(TAG, "Description:" + event.getContentDescription()+ ""); // 事件源描述
-        Log.i(TAG, "Event Type(int):" + eventType + "");
-
-        switch (eventType) {
-            case AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED:// 通知栏事件
-                Log.i(TAG, "event type:TYPE_NOTIFICATION_STATE_CHANGED");
-                break;
-            case AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED://窗体状态改变
-                Log.i(TAG, "event type:TYPE_WINDOW_STATE_CHANGED");
-                break;
-            case AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED://View获取到焦点
-                Log.i(TAG, "event type:TYPE_VIEW_ACCESSIBILITY_FOCUSED");
-                break;
-            case AccessibilityEvent.TYPE_GESTURE_DETECTION_START:
-                Log.i(TAG, "event type:TYPE_VIEW_ACCESSIBILITY_FOCUSED");
-                break;
-            case AccessibilityEvent.TYPE_GESTURE_DETECTION_END:
-                Log.i(TAG, "event type:TYPE_GESTURE_DETECTION_END");
-                break;
-            case AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED:
-                Log.i(TAG, "event type:TYPE_WINDOW_CONTENT_CHANGED");
-                break;
-            case AccessibilityEvent.TYPE_VIEW_CLICKED:
-                Log.i(TAG, "event type:TYPE_VIEW_CLICKED");
-                break;
-            case AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED:
-                Log.i(TAG, "event type:TYPE_VIEW_TEXT_CHANGED");
-                break;
-            case AccessibilityEvent.TYPE_VIEW_SCROLLED:
-                Log.i(TAG, "event type:TYPE_VIEW_SCROLLED");
-                break;
-            case AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED:
-                Log.i(TAG, "event type:TYPE_VIEW_TEXT_SELECTION_CHANGED");
-                break;
-            default:
-                Log.i(TAG, "no listen event");
-        }
-
-        for (CharSequence txt : event.getText()) {
-            // 输出当前事件包含的文本信息
-            Log.i(TAG, "text:" + txt);
-        }
-
-        Log.i(TAG, "-------------------------------------------------------------");
-    }
-
-
-    private void printNodeInfo(AccessibilityNodeInfo node) {
-        Log.i(TAG, "#######################");
-        Log.i(TAG, "Class=" + node.getClassName());
-        Log.i(TAG, "Text=" + node.getText());
-        Log.i(TAG, "Description=" + node.getContentDescription());
-        Log.i(TAG, "ViewIdResourceName=" + node.getViewIdResourceName());
-        Log.i(TAG, "#######################");
     }
 }
