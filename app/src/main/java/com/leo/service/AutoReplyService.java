@@ -24,7 +24,7 @@ import java.util.List;
  * Created by leo on 2016/8/4.
  * 自动回复服务
  */
-public class AutoReplyService extends AccessibilityService{
+public class AutoReplyService extends AccessibilityService {
 
     private static final String TAG = AutoReplyService.class.getSimpleName();
 
@@ -157,7 +157,7 @@ public class AutoReplyService extends AccessibilityService{
             AccessibilityNodeInfo node = rootNode.getChild(i);
             if (UI.EDITTEXT.equals(node.getClassName())) {   // 找到输入框并输入文本
                 Log.i(TAG, "****found the EditText");
-                setText(node, reply);
+                fillText(node, reply);
                 return true;
             }
 
@@ -170,9 +170,9 @@ public class AutoReplyService extends AccessibilityService{
 
 
     /**
-     * 设置文本
+     * 填充文本
      */
-    private void setText(AccessibilityNodeInfo node, String reply) {
+    private void fillText(AccessibilityNodeInfo node, String reply) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Log.i(TAG, "set text");
             Bundle args = new Bundle();

@@ -2,7 +2,15 @@
     <string name="app_name">WXAutoManager</string>
 
     <string name="auto_reply_description">自动回复信息服务</string>
-    <string name="auto_open_lucky_money_description">自动抢红包服务</string>
+    <string name="auto_open_lucky_money_description">
+        自动抢红包服务\n
+        1.取消手机锁屏密码\n
+        2.取消微信所有"消息免打扰"\n
+        3.
+    </string>
     <string name="AutoOpenPacketService">AutoOpenLuckyMoneyService</string>
     <string name="AutoReplyService">AutoReplyService</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
 </resources>

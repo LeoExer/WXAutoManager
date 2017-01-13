@@ -42,7 +42,6 @@ public class AutoOpenLuckyMoneyService extends AccessibilityService{
                 hasNotify = true;
                 break;
 
-
             default:
                 Log.i(TAG, "DEFAULT");
                 if(hasNotify) {
@@ -90,7 +89,6 @@ public class AutoOpenLuckyMoneyService extends AccessibilityService{
                 } catch (PendingIntent.CanceledException e) {
                     e.printStackTrace();
                 }
-//            }
         }
     }
 
