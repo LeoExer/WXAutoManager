@@ -1,4 +1,4 @@
-package com.leo.util;
+package com.leo.common.util;
 
 import android.app.KeyguardManager;
 import android.content.Context;

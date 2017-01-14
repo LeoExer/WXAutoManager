@@ -9,8 +9,9 @@ import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import com.leo.common.Config;
 import com.leo.common.UI;
-import com.leo.util.PhoneController;
+import com.leo.common.util.PhoneController;
 
 import java.util.List;
 
@@ -30,6 +31,11 @@ public class AutoOpenLuckyMoneyService extends AccessibilityService{
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
+        if(!Config.isOpenAutoOpenLuckyMoney) {
+            Log.i(TAG, "interrupt auto open lucky money service");
+            return;
+        }
+
         int eventType = event.getEventType(); // 事件类型
         switch (eventType) {
             case AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED: // 通知栏事件

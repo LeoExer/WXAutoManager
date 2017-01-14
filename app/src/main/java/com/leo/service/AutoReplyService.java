@@ -16,7 +16,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.leo.common.Config;
 import com.leo.common.UI;
-import com.leo.util.PhoneController;
+import com.leo.common.util.PhoneController;
 
 import java.util.List;
 
@@ -36,10 +36,15 @@ public class AutoReplyService extends AccessibilityService {
      */
     @Override
     public void onAccessibilityEvent(final AccessibilityEvent event) {
+        if(!Config.isOpenAutoReply) {
+            Log.i(TAG, "interrupt auto reply service");
+            return;
+        }
+
         int eventType = event.getEventType(); // 事件类型
         switch (eventType) {
             case AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED: // 通知栏事件
-                Log.i(TAG, "TYPE_NOTIFICATION_STATE_CHANGED");
+//                Log.i(TAG, "TYPE_NOTIFICATION_STATE_CHANGED");
                 if(PhoneController.isLockScreen(this)) { // 锁屏
                     PhoneController.wakeAndUnlockScreen(this);   // 唤醒点亮屏幕
                 }
@@ -48,14 +53,14 @@ public class AutoReplyService extends AccessibilityService {
                 break;
 
             default:
-                Log.i(TAG, "DEFAULT");
+//                Log.i(TAG, "DEFAULT");
                 if (hasNotify) {
                     try {
                         Thread.sleep(1000); // 停1秒, 否则在微信主界面没进入聊天界面就执行了fillInputBar
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    if (fillInputBar("我在敲代码，稍后回复哈~")) {
+                    if (fillInputBar(Config.AutoReplyText)) {
                         findAndPerformAction(UI.BUTTON, "发送");
                         handler.postDelayed(new Runnable() {
                             @Override
