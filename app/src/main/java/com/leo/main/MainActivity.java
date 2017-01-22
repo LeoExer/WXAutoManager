@@ -2,9 +2,12 @@ package com.leo.main;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.SwitchCompat;
@@ -16,11 +19,14 @@ import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.leo.common.Config;
-import com.leo.common.util.DataManager;
+import com.leo.common.util.DensityUtils;
+import com.leo.common.util.SPHelper;
+import com.leo.service.AutoOpenLuckyMoneyService;
+import com.leo.service.AutoReplyService;
 import com.leo.wxautomanager.R;
 
 import java.util.ArrayList;
@@ -33,26 +39,35 @@ public class MainActivity extends AppCompatActivity {
     private static final String KEY_SELECT_ID = "select_id";
     private static final String KEY_AUTO_REPLY_TEXT = "reply_text";
 
-    SwitchCompat swReply;
-    SwitchCompat swLuckyMoney;
-    ListView lvContents;
-    MyAdapter mAdapter;
+    private MyAdapter mAdapter;
+
+    private final List<String> mData = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        DataManager.getInstance().init(this);
+        SPHelper.getInstance().init(this);
         initData();
         initView();
     }
 
     private void initData() {
-        Config.isOpenAutoReply = DataManager.getInstance().getBoolean(KEY_REPLY);
-        Config.isOpenAutoOpenLuckyMoney = DataManager.getInstance().getBoolean(KEY_LUCKY_MONEY);
-        Config.SelectId = DataManager.getInstance().getInt(KEY_SELECT_ID);
-        Config.AutoReplyText = DataManager.getInstance().getString(KEY_AUTO_REPLY_TEXT);
+        Config.isOpenAutoReply = SPHelper.getInstance().getBoolean(KEY_REPLY);
+        Config.isOpenAutoOpenLuckyMoney = SPHelper.getInstance().getBoolean(KEY_LUCKY_MONEY);
+        int selectId = SPHelper.getInstance().getInt(KEY_SELECT_ID);
+        if (selectId < 0 || selectId > 2) {
+            selectId = 0;
+        }
+        Config.SelectId = selectId;
+        Config.AutoReplyText = SPHelper.getInstance().getString(KEY_AUTO_REPLY_TEXT);
+
+        // 自动回复默认文本
+        mData.add("Hey~");
+        mData.add("你已被拉进黑名单");
+        mData.add("忙碌.jpg");
     }
 
 
@@ -64,73 +79,122 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-
-                addData(MainActivity.this);
+                showAddReplyView(MainActivity.this);
             }
         });
 
-        swReply = (SwitchCompat) findViewById(R.id.sw_auto_reply);
+        SwitchCompat swReply = (SwitchCompat) findViewById(R.id.sw_auto_reply);
         swReply.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked) {
+                    checkAutoReplyService(MainActivity.this);
                     Config.isOpenAutoReply = true;
-                    DataManager.getInstance().putBoolean(KEY_REPLY, true);
+                    SPHelper.getInstance().putBoolean(KEY_REPLY, true);
                 } else {
                     Config.isOpenAutoReply = false;
-                    DataManager.getInstance().putBoolean(KEY_REPLY, false);
+                    SPHelper.getInstance().putBoolean(KEY_REPLY, false);
                 }
             }
         });
         swReply.setChecked(Config.isOpenAutoReply);
 
-        swLuckyMoney = (SwitchCompat) findViewById(R.id.sw_auto_open_lucky_money);
+        SwitchCompat swLuckyMoney = (SwitchCompat) findViewById(R.id.sw_auto_open_lucky_money);
         swLuckyMoney.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked) {
+                    checkAutoOpenLuckyMoneyService(MainActivity.this);
                     Config.isOpenAutoOpenLuckyMoney = true;
-                    DataManager.getInstance().putBoolean(KEY_LUCKY_MONEY, true);
+                    SPHelper.getInstance().putBoolean(KEY_LUCKY_MONEY, true);
                 } else {
                     Config.isOpenAutoOpenLuckyMoney = false;
-                    DataManager.getInstance().putBoolean(KEY_LUCKY_MONEY, false);
+                    SPHelper.getInstance().putBoolean(KEY_LUCKY_MONEY, false);
                 }
             }
         });
         swLuckyMoney.setChecked(Config.isOpenAutoOpenLuckyMoney);
 
-        List<String> data = new ArrayList<>();
-        data.add("hello world");
-        data.add("我很忙");
-        data.add("我现在没空，稍后回复");
-        mAdapter = new MyAdapter(this, data, Config.SelectId);
-        lvContents = (ListView) findViewById(R.id.lv_reply_content);
+
+        mAdapter = new MyAdapter(this, mData, Config.SelectId);
+        ListView lvContents = (ListView) findViewById(R.id.lv_reply_content);
         lvContents.setAdapter(mAdapter);
     }
 
 
-    private void addData(final Context context) {
-        final Dialog dialog = new Dialog(context);
-        View contentView = LayoutInflater.from(context).inflate(R.layout.dialog_view, null);
-        dialog.setContentView(contentView);
-        final EditText editText = (EditText) contentView.findViewById(R.id.ed_add_text);
-        contentView.findViewById(R.id.btn_ok).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String text = editText.getText().toString();
-                Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
-                dialog.dismiss();
-            }
-        });
-        contentView.findViewById(R.id.btn_cancel).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
+    private final int ADD_TEXT_LIMIT = 8;
+    private void showAddReplyView(final Context context) {
+        final RelativeLayout contentView = new RelativeLayout(context);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+        params.setMargins(DensityUtils.dp2px(context, 30), 0,
+                DensityUtils.dp2px(context, 20), 0);
+        final EditText editText =  new EditText(context);
+        contentView.addView(editText, params);
+
+        final Dialog dialog = new AlertDialog.Builder(context)
+                .setTitle("添加自动回复文本")
+                .setView(contentView)
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String text = editText.getText().toString();
+                        if (text.length() > 0) {
+                            if (mData.size() < ADD_TEXT_LIMIT) {
+                                addText(text);
+                                Snackbar.make(contentView, "添加文本成功", Snackbar.LENGTH_SHORT)
+                                        .setAction("Action", null).show();
+                            } else {
+                                Snackbar.make(contentView, "添加文本已到上限", Snackbar.LENGTH_SHORT)
+                                        .setAction("Action", null).show();
+                            }
+                        }
+                        dialog.dismiss();
+                    }
+                })
+                .setNegativeButton("取消", null)
+                .create();
+        dialog.setCancelable(true);
         dialog.show();
+    }
+
+    private void addText(String text) {
+            mData.add(text);
+            mAdapter.notifyDataSetChanged();
+    }
+
+    private void checkAutoReplyService(Context context) {
+        if (!AutoReplyService.isConnected()) {
+            showAccessibilityServiceSettings(context);
+        }
+    }
+
+    private void checkAutoOpenLuckyMoneyService(Context context) {
+        if (!AutoOpenLuckyMoneyService.isConnected()) {
+            showAccessibilityServiceSettings(context);
+        }
+    }
+
+    private Dialog mDialog = null;
+    private void showAccessibilityServiceSettings(Context context) {
+        if (mDialog != null && mDialog.isShowing()) {
+            mDialog.dismiss();
+            mDialog = null;
+        }
+        mDialog = new AlertDialog.Builder(context)
+                .setMessage("使用微信自动服务需要打开辅助服务, 去设置?")
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent();
+                        intent.setAction("android.settings.ACCESSIBILITY_SETTINGS");
+                        startActivity(intent);
+                    }
+                })
+                .setNegativeButton("取消", null)
+                .create();
+        mDialog.show();
     }
 
 
@@ -184,10 +248,10 @@ public class MainActivity extends AppCompatActivity {
                         mSelectId = position;
                         notifyDataSetChanged();
                         // 保存数据
-                        DataManager.getInstance().putInt(KEY_SELECT_ID, mSelectId);
+                        SPHelper.getInstance().putInt(KEY_SELECT_ID, mSelectId);
                         String text = mData.get(position);
                         Config.AutoReplyText = text;
-                        DataManager.getInstance().putString(KEY_AUTO_REPLY_TEXT, text);
+                        SPHelper.getInstance().putString(KEY_AUTO_REPLY_TEXT, text);
                     }
                 }
             });
@@ -201,4 +265,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        Intent i = new Intent(Intent.ACTION_MAIN);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        i.addCategory(Intent.CATEGORY_HOME);
+        startActivity(i);
+    }
 }

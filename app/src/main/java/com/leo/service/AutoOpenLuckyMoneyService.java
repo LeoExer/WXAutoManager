@@ -3,6 +3,7 @@ package com.leo.service;
 import android.accessibilityservice.AccessibilityService;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -19,7 +20,7 @@ import java.util.List;
  * Created by leo on 2016/8/7.
  * 自动抢红包服务
  */
-public class AutoOpenLuckyMoneyService extends AccessibilityService{
+public class AutoOpenLuckyMoneyService extends AccessibilityService {
 
     private static final String TAG = AutoOpenLuckyMoneyService.class.getSimpleName();
 
@@ -27,6 +28,7 @@ public class AutoOpenLuckyMoneyService extends AccessibilityService{
     private static final int MSG_BACK_ONCE = 1;
     boolean hasNotify = false;
     boolean hasLuckyMoney = true;
+    private static boolean sIsBound = false;
 
 
     @Override
@@ -81,6 +83,23 @@ public class AutoOpenLuckyMoneyService extends AccessibilityService{
 
     }
 
+    @Override
+    protected void onServiceConnected() {
+        Log.i(TAG, "connect auto open lucky money service");
+        sIsBound = true;
+        super.onServiceConnected();
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        Log.i(TAG, "disconnect auto open lucky money service");
+        sIsBound = false;
+        return super.onUnbind(intent);
+    }
+
+    public static boolean isConnected() {
+        return sIsBound;
+    }
 
     /**
      * 打开微信
@@ -97,7 +116,6 @@ public class AutoOpenLuckyMoneyService extends AccessibilityService{
                 }
         }
     }
-
 
 
     private void clickLuckyMoney(AccessibilityNodeInfo rootNode) {

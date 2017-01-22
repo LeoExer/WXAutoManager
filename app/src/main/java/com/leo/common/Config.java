@@ -24,10 +24,10 @@ public class Config {
     /**
      * 自动回复文本
      */
-    public static String AutoReplyText;
+    public static String AutoReplyText = "我现在没空, 稍后回复哈~";
 
     /**
      * 选择ID
      */
-    public static int SelectId;
+    public static int SelectId = 0;
 }

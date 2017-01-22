@@ -4,26 +4,25 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 /**
- * Created by lenovo on 2017/1/14.
+ * Created by leo on 2017/1/14.
  */
 
-public class DataManager {
+public class SPHelper {
 
     private static final String DATA_NAME = "MySharePre";
 
     private SharedPreferences mSharedPre;
 
-    private static DataManager instance = null;
+    private static SPHelper instance = null;
 
-    private DataManager() {
-
+    private SPHelper() {
     }
 
-    public static DataManager getInstance() {
+    public static SPHelper getInstance() {
         if(instance == null) {
-            synchronized (DataManager.class) {
+            synchronized (SPHelper.class) {
                 if (instance == null) {
-                    instance = new DataManager();
+                    instance = new SPHelper();
                 }
             }
         }
@@ -52,9 +51,9 @@ public class DataManager {
 
     public int getInt(String key) {
         if(!isInit()) {
-            return -1;
+            return 0;
         }
-        return mSharedPre.getInt(key, -1);
+        return mSharedPre.getInt(key, 0);
     }
 
     public void putInt(String key, int value) {
@@ -81,7 +80,6 @@ public class DataManager {
         editor.putString(key, value);
         editor.apply();
     }
-
 
     private boolean isInit() {
         return mSharedPre != null;

@@ -1,12 +1,12 @@
 package com.leo.service;
 
 import android.accessibilityservice.AccessibilityService;
-import android.accessibilityservice.AccessibilityServiceInfo;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,6 +30,7 @@ public class AutoReplyService extends AccessibilityService {
 
     private Handler handler = new Handler();
     private boolean hasNotify = false;
+    private static boolean sIsBound = false;
 
     /**
      * 必须重写的方法，响应各种事件。
@@ -85,12 +86,28 @@ public class AutoReplyService extends AccessibilityService {
 
     @Override
     protected void onServiceConnected() {
-        AccessibilityServiceInfo info = new AccessibilityServiceInfo();
-        info.eventTypes = AccessibilityEvent.TYPES_ALL_MASK;
-        info.packageNames = new String[]{Config.WX_PACKAGE_NAME};
-        info.feedbackType = AccessibilityServiceInfo.FEEDBACK_SPOKEN;
-        info.notificationTimeout = 100;
-        this.setServiceInfo(info);
+        // mainfest 配置了这里无需配置
+//        AccessibilityServiceInfo info = new AccessibilityServiceInfo();
+//        info.eventTypes = AccessibilityEvent.TYPES_ALL_MASK;
+//        info.packageNames = new String[]{Config.WX_PACKAGE_NAME};
+//        info.feedbackType = AccessibilityServiceInfo.FEEDBACK_SPOKEN;
+//        info.notificationTimeout = 100;
+//        this.setServiceInfo(info);
+
+        Log.i(TAG, "connect auto reply service");
+        sIsBound = true;
+        super.onServiceConnected();
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        Log.i(TAG, "disconnect auto reply service");
+        sIsBound = false;
+        return super.onUnbind(intent);
+    }
+
+    public static boolean isConnected() {
+        return sIsBound;
     }
 
     /**
